@@ -8,14 +8,12 @@ import wavio
 import threading
 import speech_recognition as sr
 
-# -------------------- CONFIGURATION --------------------
-# Flask API URL
+
 FLASK_API_URL = "http://localhost:5000"
 
-# Supported language (English only)
 SUPPORTED_LANGUAGES = {"en": "English"}
 
-# -------------------- SESSION STATE --------------------
+
 if "recording_audio" not in st.session_state:
     st.session_state["recording_audio"] = False
 if "transcription" not in st.session_state:
@@ -25,11 +23,10 @@ if "gaze_percentage" not in st.session_state:
 if "audio_file" not in st.session_state:
     st.session_state["audio_file"] = None
 
-# -------------------- TITLE --------------------
-st.title("🎙️ AI-TruthScan: Detect AI-Generated Interview Responses")
 
-# -------------------- UPLOAD SECTION --------------------
-with st.expander("📁 Upload Audio or Video File", expanded=True):
+st.title("AI-TruthScan: Detect AI-Generated Interview Responses")
+
+with st.expander(" Upload Audio or Video File", expanded=True):
     upload_option = st.radio("Select file type to upload", ("Audio", "Video"))
     if upload_option == "Audio":
         uploaded_file = st.file_uploader("Upload an audio file (mp3, wav, m4a)", type=["mp3", "wav", "m4a"])
@@ -52,22 +49,22 @@ with st.expander("📁 Upload Audio or Video File", expanded=True):
             st.session_state["video_file"] = video_path
             st.session_state["audio_file"] = None
 
-# -------------------- RECORDING SECTION --------------------
-with st.expander("🎧 Live Audio Recording", expanded=True):
+
+with st.expander(" Live Audio Recording", expanded=True):
     if st.button("Start Audio Recording"):
         st.session_state["recording_audio"] = True
         st.write("Recording audio...")
 
         def record_audio():
-            fs = 44100  # Sample rate
+            fs = 44100  
             recording = []
             with sd.InputStream(samplerate=fs, channels=1) as stream:
                 while st.session_state["recording_audio"]:
-                    data = stream.read(fs // 10)[0]  # Read in chunks
+                    data = stream.read(fs // 10)[0]  
                     recording.append(data)
             audio_data = np.concatenate(recording, axis=0)
             wav_path = "temp_audio.wav"
-            # Save audio as WAV file
+            
             wavio.write(wav_path, audio_data, fs, sampwidth=2)
             with open(wav_path, "rb") as f:
                 st.session_state["audio_file"] = f.read()
@@ -80,12 +77,12 @@ with st.expander("🎧 Live Audio Recording", expanded=True):
     if st.button("Stop Audio Recording"):
         st.session_state["recording_audio"] = False
 
-# -------------------- ANALYSIS SECTION --------------------
-with st.expander("🧠 Analysis Settings", expanded=True):
+
+with st.expander(" Analysis Settings", expanded=True):
     context = st.selectbox("Select the context of the speech", ["General", "Casual Conversation", "Formal Interview"])
     threshold = st.slider("Set AI-Generated Probability Threshold (%)", 0, 100, 50)
 
-if st.button("🧠 Analyze"):
+if st.button(" Analyze"):
     if st.session_state["audio_file"]:
         with st.spinner("Analyzing..."):
             files = {"file": ("audio.wav", st.session_state["audio_file"], "audio/wav")}
@@ -114,10 +111,9 @@ if st.button("🧠 Analyze"):
             except Exception as e:
                 st.error(f"Error analyzing file: {e}")
     else:
-        st.warning("⚠️ No audio file available for analysis.")
+        st.warning(" No audio file available for analysis.")
 
-# -------------------- VIEW SAVED RESULTS --------------------
-with st.expander("📂 View Saved Results"):
+with st.expander(" View Saved Results"):
     try:
         response = requests.get(f"{FLASK_API_URL}/results")
         results = response.json()
@@ -131,6 +127,6 @@ with st.expander("📂 View Saved Results"):
     except Exception as e:
         st.error(f"Error fetching saved results: {e}")
 
-# -------------------- DISCLAIMER --------------------
+
 st.markdown("---")
-st.info("⚠️ *Note:* Results are estimates based on patterns. Use as a guide.")
+st.info(" *Note:* Results are estimates based on patterns. Use as a guide.")
